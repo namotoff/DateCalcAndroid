@@ -1,0 +1,26 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Calendar body -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M24,30h60v58H24z"/>
+    <!-- Calendar header -->
+    <path
+        android:fillColor="#007AFF"
+        android:pathData="M24,30h60v14H24z"/>
+    <!-- Calendar rings -->
+    <path
+        android:fillColor="#007AFF"
+        android:pathData="M38,24h4v12h-4zM66,24h4v12h-4z"/>
+    <!-- Grid dots representing dates -->
+    <path
+        android:fillColor="#1F2938"
+        android:pathData="M32,52h6v6h-6zM42,52h6v6h-6zM52,52h6v6h-6zM62,52h6v6h-6zM72,52h6v6h-6zM32,62h6v6h-6zM42,62h6v6h-6zM52,62h6v6h-6zM62,62h6v6h-6zM72,62h6v6h-6zM32,72h6v6h-6zM42,72h6v6h-6zM52,72h6v6h-6z"/>
+    <!-- Highlighted date -->
+    <path
+        android:fillColor="#007AFF"
+        android:pathData="M62,72h6v6h-6z"/>
+</vector>
