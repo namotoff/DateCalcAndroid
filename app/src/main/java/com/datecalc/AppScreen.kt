@@ -2,40 +2,39 @@ package com.datecalc
 
 import android.content.Intent
 import android.net.Uri
-import android.widget.FrameLayout
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.clickable
+import android.view.View
+import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
-import com.datecalc.ads.AdManager
 import com.datecalc.logic.DateCalculator
 import com.datecalc.logic.DateCalcResult
 import com.datecalc.ui.components.DateCard
 import com.datecalc.ui.components.ResultBox
 import com.datecalc.ui.components.WheelColumnPicker
 import com.datecalc.ui.theme.DateCalcTheme
+import org.json.JSONArray
+import org.json.JSONObject
 import java.util.Calendar
 
 private const val APP_VERSION = "2.0"
+private const val PREFS_NAME = "datecalc_prefs"
+private const val KEY_WIDGETS = "saved_widgets"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,7 +43,9 @@ fun AppScreen() {
     DateCalcTheme(darkTheme = darkTheme) {
         val context = LocalContext.current
         var showMenu by remember { mutableStateOf(false) }
+        var showAbout by remember { mutableStateOf(false) }
         var showWidgetSetup by remember { mutableStateOf(false) }
+        var showSavedWidgets by remember { mutableStateOf(false) }
 
         val cal = Calendar.getInstance()
         val todayDay = cal.get(Calendar.DAY_OF_MONTH)
@@ -82,21 +83,24 @@ fun AppScreen() {
             topBar = {
                 TopAppBar(
                     title = {
-                        if (showWidgetSetup) {
-                            Text("Настройка виджета", fontWeight = FontWeight.SemiBold, fontSize = 17.sp, color = MaterialTheme.colorScheme.onBackground)
-                        } else {
-                            Text("Дата-калькулятор", fontWeight = FontWeight.SemiBold, fontSize = 17.sp, color = MaterialTheme.colorScheme.onBackground)
+                        when {
+                            showWidgetSetup -> Text("Настройка виджета", fontWeight = FontWeight.SemiBold, fontSize = 17.sp, color = MaterialTheme.colorScheme.onBackground)
+                            showSavedWidgets -> Text("Сохранённые виджеты", fontWeight = FontWeight.SemiBold, fontSize = 17.sp, color = MaterialTheme.colorScheme.onBackground)
+                            else -> Text("Дата-калькулятор", fontWeight = FontWeight.SemiBold, fontSize = 17.sp, color = MaterialTheme.colorScheme.onBackground)
                         }
                     },
                     navigationIcon = {
-                        if (showWidgetSetup) {
-                            IconButton(onClick = { showWidgetSetup = false }) {
+                        if (showWidgetSetup || showSavedWidgets) {
+                            IconButton(onClick = {
+                                showWidgetSetup = false
+                                showSavedWidgets = false
+                            }) {
                                 Icon(Icons.Filled.ArrowBack, "Назад", tint = MaterialTheme.colorScheme.onBackground)
                             }
                         }
                     },
                     actions = {
-                        if (!showWidgetSetup) {
+                        if (!showWidgetSetup && !showSavedWidgets) {
                             IconButton(onClick = { darkTheme = !darkTheme }) {
                                 Text(if (darkTheme) "☀️" else "🌙", fontSize = 16.sp)
                             }
@@ -116,42 +120,29 @@ fun AppScreen() {
             containerColor = MaterialTheme.colorScheme.background
         ) { paddingValues ->
 
-            if (showWidgetSetup) {
-                WidgetSetupScreen(paddingValues, onDone = {
-                    showWidgetSetup = false
-                })
-            } else {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues)
-                        .verticalScroll(rememberScrollState())
-                        .padding(horizontal = 12.dp, vertical = 4.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    DateCard("Дата начала", "calendar", Color(0xFF007AFF), safeStartDay, startMonth, startYear, startDays, "Учитывать начальную дату", includeStart, { d, m, y -> startDay = d; startMonth = m; startYear = y }, { includeStart = it })
-                    DateCard("Дата окончания", "clock", Color(0xFFFF9500), safeEndDay, endMonth, endYear, endDays, "Учитывать конечную дату", includeEnd, { d, m, y -> endDay = d; endMonth = m; endYear = y }, { includeEnd = it })
+            when {
+                showWidgetSetup -> WidgetSetupScreen(paddingValues, onDone = { showWidgetSetup = false })
+                showSavedWidgets -> SavedWidgetsScreen(paddingValues, onEdit = { showSavedWidgets = false; showWidgetSetup = true })
+                else -> {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(paddingValues)
+                            .verticalScroll(rememberScrollState())
+                            .padding(horizontal = 12.dp, vertical = 4.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        DateCard("Дата начала", "calendar", Color(0xFF007AFF), safeStartDay, startMonth, startYear, startDays, "Учитывать начальную дату", includeStart, { d, m, y -> startDay = d; startMonth = m; startYear = y }, { includeStart = it })
+                        DateCard("Дата окончания", "clock", Color(0xFFFF9500), safeEndDay, endMonth, endYear, endDays, "Учитывать конечную дату", includeEnd, { d, m, y -> endDay = d; endMonth = m; endYear = y }, { includeEnd = it })
 
-                    if (error.isNotEmpty()) {
-                        Surface(shape = RoundedCornerShape(14.dp), color = MaterialTheme.colorScheme.error.copy(alpha = 0.10f), modifier = Modifier.fillMaxWidth()) {
-                            Text(error, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(12.dp))
-                        }
-                    }
-
-                    ResultBox(result, DateCalculator.resultDescription(includeStart, includeEnd))
-                }
-
-                // Banner ad at bottom
-                if (AdManager.hasBannerSlot()) {
-                    AndroidView(
-                        factory = { ctx ->
-                            FrameLayout(ctx).apply {
-                                layoutParams = FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT)
-                                AdManager.createBanner(ctx as android.app.Activity, this)
+                        if (error.isNotEmpty()) {
+                            Surface(shape = RoundedCornerShape(14.dp), color = MaterialTheme.colorScheme.error.copy(alpha = 0.10f), modifier = Modifier.fillMaxWidth()) {
+                                Text(error, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(12.dp))
                             }
-                        },
-                        modifier = Modifier.padding(paddingValues).fillMaxWidth()
-                    )
+                        }
+
+                        ResultBox(result, DateCalculator.resultDescription(includeStart, includeEnd))
+                    }
                 }
             }
         }
@@ -172,10 +163,15 @@ fun AppScreen() {
 
                     MenuChip("ℹ️", "О приложении", Color(0xFF007AFF)) {
                         showMenu = false
+                        showAbout = true
                     }
                     MenuChip("📅", "Настроить виджет", Color(0xFF5856D6)) {
                         showMenu = false
                         showWidgetSetup = true
+                    }
+                    MenuChip("📋", "Сохранённые виджеты", Color(0xFFAF52DE)) {
+                        showMenu = false
+                        showSavedWidgets = true
                     }
                     MenuChip("🔒", "Политика конфиденциальности", Color(0xFF34C759)) {
                         showMenu = false
@@ -190,8 +186,165 @@ fun AppScreen() {
                 }
             }
         }
+
+        // About dialog
+        if (showAbout) {
+            AlertDialog(
+                onDismissRequest = { showAbout = false },
+                title = { Text("Дата-калькулятор", fontWeight = FontWeight.Bold) },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text("Версия $APP_VERSION", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
+                        Text("Калькулятор дней между датами с виджетом на рабочий стол.", fontSize = 14.sp)
+                        Text("Разработчик: edazin@bk.ru", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                },
+                confirmButton = {
+                    TextButton(onClick = { showAbout = false }) { Text("OK") }
+                }
+            )
+        }
     }
 }
+
+// --- Widget data storage helpers ---
+
+data class WidgetPreset(
+    val name: String,
+    val day: Int,
+    val month: Int,
+    val year: Int
+)
+
+private fun loadPresets(context: android.content.Context): List<WidgetPreset> {
+    val prefs = context.getSharedPreferences(PREFS_NAME, android.content.Context.MODE_PRIVATE)
+    val json = prefs.getString(KEY_WIDGETS, null) ?: return emptyList()
+    val arr = JSONArray(json)
+    return (0 until arr.length()).map { i ->
+        val obj = arr.getJSONObject(i)
+        WidgetPreset(
+            name = obj.optString("name", ""),
+            day = obj.optInt("day", 1),
+            month = obj.optInt("month", 0),
+            year = obj.optInt("year", 2026)
+        )
+    }
+}
+
+private fun savePresets(context: android.content.Context, presets: List<WidgetPreset>) {
+    val prefs = context.getSharedPreferences(PREFS_NAME, android.content.Context.MODE_PRIVATE)
+    val arr = JSONArray()
+    presets.forEach { p ->
+        val obj = JSONObject()
+        obj.put("name", p.name)
+        obj.put("day", p.day)
+        obj.put("month", p.month)
+        obj.put("year", p.year)
+        arr.put(obj)
+    }
+    prefs.edit().putString(KEY_WIDGETS, arr.toString()).apply()
+}
+
+private fun applyPresetToWidget(context: android.content.Context, preset: WidgetPreset) {
+    val widgetPrefs = context.getSharedPreferences("datecalc_widget", android.content.Context.MODE_PRIVATE)
+    widgetPrefs.edit()
+        .putString("event_name", preset.name)
+        .putInt("target_day", preset.day)
+        .putInt("target_month", preset.month)
+        .putInt("target_year", preset.year)
+        .apply()
+}
+
+// --- Saved Widgets Screen ---
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SavedWidgetsScreen(paddingValues: PaddingValues, onEdit: () -> Unit) {
+    val context = LocalContext.current
+    var presets by remember { mutableStateOf(loadPresets(context)) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(paddingValues)
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        if (presets.isEmpty()) {
+            Spacer(modifier = Modifier.height(32.dp))
+            Text("Нет сохранённых виджетов", fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+            Spacer(modifier = Modifier.height(8.dp))
+            Text("Настройте виджет и сохраните — он появится здесь.", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+        } else {
+            presets.forEachIndexed { index, preset ->
+                val monthNames = listOf("января", "февраля", "марта", "апреля", "мая", "июня",
+                    "июля", "августа", "сентября", "октября", "ноября", "декабря")
+
+                // Calculate days left
+                val cal = Calendar.getInstance()
+                val daysLeft = run {
+                    val r = DateCalculator.calculate(
+                        cal.get(Calendar.DAY_OF_MONTH), cal.get(Calendar.MONTH), cal.get(Calendar.YEAR),
+                        preset.day, preset.month, preset.year,
+                        includeStart = false, includeEnd = true
+                    )
+                    if (r.error.isEmpty()) r.days else 0
+                }
+
+                Surface(
+                    shape = RoundedCornerShape(14.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = if (preset.name.isNotEmpty()) preset.name else "Без названия",
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                text = "${preset.day} ${monthNames[preset.month]} ${preset.year}",
+                                fontSize = 13.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Text(
+                                text = when {
+                                    daysLeft == 0 -> "Сегодня"
+                                    daysLeft > 0 -> "$daysLeft ${ruDaysWord(daysLeft)}"
+                                    else -> "${-daysLeft} ${ruDaysWord(-daysLeft)} назад"
+                                },
+                                fontSize = 13.sp,
+                                color = Color(0xFF0A84FF),
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                        // Activate button
+                        IconButton(onClick = {
+                            applyPresetToWidget(context, preset)
+                        }) {
+                            Text("▶", fontSize = 18.sp, color = Color(0xFF007AFF))
+                        }
+                        // Delete button
+                        IconButton(onClick = {
+                            presets = presets.toMutableList().also { it.removeAt(index) }
+                            savePresets(context, presets)
+                        }) {
+                            Text("🗑", fontSize = 16.sp)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// --- Menu Chip ---
 
 @Composable
 private fun MenuChip(emoji: String, label: String, color: Color, onClick: () -> Unit) {
@@ -212,6 +365,8 @@ private fun MenuChip(emoji: String, label: String, color: Color, onClick: () -> 
     }
 }
 
+// --- Widget Setup Screen ---
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun WidgetSetupScreen(paddingValues: PaddingValues, onDone: () -> Unit) {
@@ -226,7 +381,6 @@ private fun WidgetSetupScreen(paddingValues: PaddingValues, onDone: () -> Unit) 
     val safeDay = eventDay.coerceAtMost(DateCalculator.daysInMonth(eventYear, eventMonth))
     val days = remember(eventYear, eventMonth) { DateCalculator.validDaysForMonth(eventYear, eventMonth).map { it.toString() } }
 
-    // Calculate preview days
     val previewDays = remember(safeDay, eventMonth, eventYear) {
         val today = Calendar.getInstance()
         val result = DateCalculator.calculate(
@@ -260,7 +414,6 @@ private fun WidgetSetupScreen(paddingValues: PaddingValues, onDone: () -> Unit) 
                 contentAlignment = Alignment.BottomStart
             ) {
                 Column {
-                    // Label: event name or target date
                     if (eventName.isNotEmpty()) {
                         Text(eventName, color = Color(0xFF8E8E93), fontSize = 12.sp, fontWeight = FontWeight.Medium)
                         Spacer(modifier = Modifier.height(1.dp))
@@ -270,15 +423,13 @@ private fun WidgetSetupScreen(paddingValues: PaddingValues, onDone: () -> Unit) 
                         Text("$safeDay ${monthNames[eventMonth]} $eventYear", color = Color(0xFF8E8E93), fontSize = 12.sp)
                         Spacer(modifier = Modifier.height(1.dp))
                     }
-                    // Main number
                     val isPast = previewDays < 0
                     Text(
-                        text = "${if (isPast) "+" else ""}${kotlin.math.abs(previewDays)}",
+                        text = "${if (isPast && previewDays != 0) "+" else ""}${kotlin.math.abs(previewDays)}",
                         color = if (isPast) Color(0xFF8E8E93) else Color(0xFF0A84FF),
                         fontSize = 36.sp,
                         fontWeight = FontWeight.Bold
                     )
-                    // Word form
                     Text(
                         text = when {
                             previewDays == 0 -> "Сегодня"
@@ -292,7 +443,7 @@ private fun WidgetSetupScreen(paddingValues: PaddingValues, onDone: () -> Unit) 
             }
         }
 
-        // Event name — native EditText (Compose OutlinedTextField broken on real devices)
+        // Event name — native EditText: no suggestions, no autofill, no assistant
         val textColor = if (isSystemInDarkTheme()) android.graphics.Color.WHITE else android.graphics.Color.BLACK
         val hintColor = android.graphics.Color.parseColor("#8E8E93")
         val bgColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
@@ -300,12 +451,16 @@ private fun WidgetSetupScreen(paddingValues: PaddingValues, onDone: () -> Unit) 
             factory = { ctx ->
                 android.widget.EditText(ctx).apply {
                     hint = "Название события"
+                    inputType = android.text.InputType.TYPE_CLASS_TEXT or
+                            android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES or
+                            android.text.InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS
                     setSingleLine(true)
                     textSize = 16f
                     setPadding(48, 32, 48, 32)
                     background = null
                     setHintTextColor(hintColor)
                     setTextColor(textColor)
+                    importantForAutofill = View.IMPORTANT_FOR_AUTOFILL_NO
                 }
             },
             modifier = Modifier
@@ -315,17 +470,16 @@ private fun WidgetSetupScreen(paddingValues: PaddingValues, onDone: () -> Unit) 
                     RoundedCornerShape(12.dp)
                 ),
             update = { editText ->
-                editText.setOnKeyListener { _, _, event ->
-                    if (event.action == android.view.KeyEvent.ACTION_UP) {
-                        eventName = editText.text.toString()
+                editText.addTextChangedListener(object : android.text.TextWatcher {
+                    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+                    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+                    override fun afterTextChanged(s: android.text.Editable?) {
+                        val newText = s?.toString() ?: ""
+                        if (newText != eventName) {
+                            eventName = newText
+                        }
                     }
-                    false
-                }
-                editText.setOnFocusChangeListener { _, hasFocus ->
-                    if (!hasFocus) {
-                        eventName = editText.text.toString()
-                    }
-                }
+                })
             }
         )
 
@@ -354,23 +508,29 @@ private fun WidgetSetupScreen(paddingValues: PaddingValues, onDone: () -> Unit) 
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Save button
+        // Save button — saves to widget + adds to presets list
         Button(
             onClick = {
-                val prefs = context.getSharedPreferences("datecalc_widget", android.content.Context.MODE_PRIVATE)
-                prefs.edit()
+                val widgetPrefs = context.getSharedPreferences("datecalc_widget", android.content.Context.MODE_PRIVATE)
+                widgetPrefs.edit()
                     .putString("event_name", eventName)
                     .putInt("target_day", safeDay)
                     .putInt("target_month", eventMonth)
                     .putInt("target_year", eventYear)
                     .apply()
+
+                // Also save as preset
+                val currentPresets = loadPresets(context).toMutableList()
+                currentPresets.add(WidgetPreset(eventName, safeDay, eventMonth, eventYear))
+                savePresets(context, currentPresets)
+
                 onDone()
             },
             modifier = Modifier.fillMaxWidth().height(48.dp),
             shape = RoundedCornerShape(12.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF007AFF))
         ) {
-            Text("Сохранить и закрыть", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+            Text("Сохранить", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
         }
     }
 }
@@ -387,4 +547,3 @@ private fun ruDaysWord(n: Int): String {
         else -> "дней"
     }
 }
-
