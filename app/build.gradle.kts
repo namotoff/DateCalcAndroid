@@ -42,7 +42,7 @@ android {
     buildTypes {
         debug {
             isMinifyEnabled = false
-            applicationIdSuffix = ".debug"
+            // No applicationIdSuffix — same package as release, no duplicate on device
         }
         release {
             isMinifyEnabled = true
