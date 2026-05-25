@@ -24,6 +24,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import com.datecalc.ads.AdManager
 import com.datecalc.logic.DateCalculator
 import com.datecalc.logic.DateCalcResult
@@ -247,33 +249,84 @@ private fun WidgetSetupScreen(paddingValues: PaddingValues, onDone: () -> Unit) 
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Apple-style widget preview
+        // Widget preview
         Surface(
             shape = RoundedCornerShape(20.dp),
             color = Color(0xFF1C1C1E),
             modifier = Modifier.fillMaxWidth()
         ) {
-            Column(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp)
+            Box(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+                contentAlignment = Alignment.BottomStart
             ) {
-                if (eventName.isNotEmpty()) {
-                    Text(eventName.uppercase(), color = Color(0xFF8E8E93), fontSize = 11.sp, letterSpacing = 0.5.sp)
-                }
-                Row(verticalAlignment = Alignment.Bottom) {
-                    Text("$previewDays", color = Color(0xFF0A84FF), fontSize = 40.sp, fontWeight = FontWeight.Bold)
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(ruDaysWord(previewDays), color = Color(0xFF8E8E93), fontSize = 13.sp, modifier = Modifier.padding(bottom = 6.dp))
+                Column {
+                    // Label: event name or target date
+                    if (eventName.isNotEmpty()) {
+                        Text(eventName, color = Color(0xFF8E8E93), fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                        Spacer(modifier = Modifier.height(1.dp))
+                    } else {
+                        val monthNames = listOf("января", "февраля", "марта", "апреля", "мая", "июня",
+                            "июля", "августа", "сентября", "октября", "ноября", "декабря")
+                        Text("$safeDay ${monthNames[eventMonth]} $eventYear", color = Color(0xFF8E8E93), fontSize = 12.sp)
+                        Spacer(modifier = Modifier.height(1.dp))
+                    }
+                    // Main number
+                    val isPast = previewDays < 0
+                    Text(
+                        text = "${if (isPast) "+" else ""}${kotlin.math.abs(previewDays)}",
+                        color = if (isPast) Color(0xFF8E8E93) else Color(0xFF0A84FF),
+                        fontSize = 36.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    // Word form
+                    Text(
+                        text = when {
+                            previewDays == 0 -> "Сегодня"
+                            isPast -> "${ruDaysWord(kotlin.math.abs(previewDays))} назад"
+                            else -> ruDaysWord(previewDays)
+                        },
+                        color = Color(0xFF8E8E93),
+                        fontSize = 12.sp
+                    )
                 }
             }
         }
 
-        // Event name
-        OutlinedTextField(
-            value = eventName,
-            onValueChange = { eventName = it },
-            label = { Text("Название события") },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true
+        // Event name — native EditText (Compose OutlinedTextField broken on real devices)
+        val textColor = if (isSystemInDarkTheme()) android.graphics.Color.WHITE else android.graphics.Color.BLACK
+        val hintColor = android.graphics.Color.parseColor("#8E8E93")
+        val bgColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+        AndroidView(
+            factory = { ctx ->
+                android.widget.EditText(ctx).apply {
+                    hint = "Название события"
+                    setSingleLine(true)
+                    textSize = 16f
+                    setPadding(48, 32, 48, 32)
+                    background = null
+                    setHintTextColor(hintColor)
+                    setTextColor(textColor)
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    bgColor,
+                    RoundedCornerShape(12.dp)
+                ),
+            update = { editText ->
+                editText.setOnKeyListener { _, _, event ->
+                    if (event.action == android.view.KeyEvent.ACTION_UP) {
+                        eventName = editText.text.toString()
+                    }
+                    false
+                }
+                editText.setOnFocusChangeListener { _, hasFocus ->
+                    if (!hasFocus) {
+                        eventName = editText.text.toString()
+                    }
+                }
+            }
         )
 
         // Date pickers

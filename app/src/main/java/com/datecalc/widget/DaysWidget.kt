@@ -1,6 +1,8 @@
 package com.datecalc.widget
 
 import android.content.Context
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
 import androidx.glance.ImageProvider
@@ -13,18 +15,15 @@ import androidx.glance.background
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
 import androidx.glance.layout.Column
-import androidx.glance.layout.Row
 import androidx.glance.layout.Spacer
 import androidx.glance.layout.fillMaxSize
-import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.height
 import androidx.glance.layout.padding
-import androidx.glance.layout.width
+import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
+import androidx.glance.text.TextAlign
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.datecalc.MainActivity
 import com.datecalc.R
 import com.datecalc.logic.DateCalculator
@@ -45,17 +44,29 @@ class DaysWidget : GlanceAppWidget() {
             val targetMonth = prefs.getInt("target_month", 0)
             val targetYear = prefs.getInt("target_year", 0)
 
+            val cal = Calendar.getInstance()
+            val todayDay = cal.get(Calendar.DAY_OF_MONTH)
+            val todayMonth = cal.get(Calendar.MONTH)
+            val todayYear = cal.get(Calendar.YEAR)
+
             val daysLeft = if (targetDay > 0 && targetMonth >= 0 && targetYear > 0) {
-                val cal = Calendar.getInstance()
                 val result = DateCalculator.calculate(
-                    cal.get(Calendar.DAY_OF_MONTH), cal.get(Calendar.MONTH), cal.get(Calendar.YEAR),
+                    todayDay, todayMonth, todayYear,
                     targetDay, targetMonth, targetYear,
                     includeStart = false, includeEnd = true
                 )
                 if (result.error.isEmpty()) result.days else 0
             } else 0
 
-            val wordForm = ruDaysWord(daysLeft)
+            val isPast = daysLeft <= 0 && (targetDay > 0)
+            val wordForm = ruDaysWord(kotlin.math.abs(daysLeft))
+
+            // Format target date: "25 мая 2026"
+            val targetDateStr = if (targetDay > 0) {
+                val monthNames = listOf("января", "февраля", "марта", "апреля", "мая", "июня",
+                    "июля", "августа", "сентября", "октября", "ноября", "декабря")
+                "$targetDay ${monthNames[targetMonth]} $targetYear"
+            } else ""
 
             Box(
                 modifier = GlanceModifier
@@ -64,37 +75,53 @@ class DaysWidget : GlanceAppWidget() {
                     .clickable(actionStartActivity<MainActivity>())
             ) {
                 Column(
-                    modifier = GlanceModifier.fillMaxSize().padding(horizontal = 16.dp, vertical = 12.dp),
-                    verticalAlignment = Alignment.Vertical.CenterVertically
+                    modifier = GlanceModifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp, vertical = 10.dp),
+                    verticalAlignment = Alignment.Vertical.Bottom
                 ) {
+                    // Event name — subtle top label
                     if (eventName.isNotEmpty()) {
                         Text(
-                            text = eventName.uppercase(),
+                            text = eventName,
                             style = TextStyle(
                                 color = ColorProvider(R.color.widget_subtitle),
-                                fontSize = 11.sp
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Medium
                             )
                         )
+                        Spacer(modifier = GlanceModifier.height(1.dp))
+                    } else if (targetDateStr.isNotEmpty()) {
+                        Text(
+                            text = targetDateStr,
+                            style = TextStyle(
+                                color = ColorProvider(R.color.widget_subtitle),
+                                fontSize = 12.sp
+                            )
+                        )
+                        Spacer(modifier = GlanceModifier.height(1.dp))
                     }
-                    Spacer(modifier = GlanceModifier.height(2.dp))
-                    Row(
-                        modifier = GlanceModifier.fillMaxWidth(),
-                        horizontalAlignment = Alignment.Horizontal.Start,
-                        verticalAlignment = Alignment.Vertical.CenterVertically
+
+                    // Main number + word
+                    Column(
+                        horizontalAlignment = Alignment.Horizontal.Start
                     ) {
                         Text(
-                            text = "$daysLeft",
+                            text = if (isPast && daysLeft != 0) "+" else "" + "${kotlin.math.abs(daysLeft)}",
                             style = TextStyle(
-                                color = ColorProvider(R.color.widget_accent),
-                                fontSize = 40.sp
+                                color = if (isPast) ColorProvider(R.color.widget_subtitle)
+                                    else ColorProvider(R.color.widget_accent),
+                                fontSize = 36.sp,
+                                fontWeight = FontWeight.Bold
                             )
                         )
-                        Spacer(modifier = GlanceModifier.width(6.dp))
                         Text(
-                            text = wordForm,
+                            text = if (daysLeft == 0 && targetDay > 0) "Сегодня"
+                                else if (isPast) "$wordForm назад"
+                                else wordForm,
                             style = TextStyle(
                                 color = ColorProvider(R.color.widget_subtitle),
-                                fontSize = 13.sp
+                                fontSize = 12.sp
                             )
                         )
                     }
