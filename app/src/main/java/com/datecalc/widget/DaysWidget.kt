@@ -15,13 +15,14 @@ import androidx.glance.background
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
 import androidx.glance.layout.Column
+import androidx.glance.layout.Row
 import androidx.glance.layout.Spacer
 import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.height
 import androidx.glance.layout.padding
+import androidx.glance.layout.width
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
-import androidx.glance.text.TextAlign
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
 import com.datecalc.MainActivity
@@ -58,15 +59,26 @@ class DaysWidget : GlanceAppWidget() {
                 if (result.error.isEmpty()) result.days else 0
             } else 0
 
-            val isPast = daysLeft <= 0 && (targetDay > 0)
-            val wordForm = ruDaysWord(kotlin.math.abs(daysLeft))
+            val isPast = daysLeft < 0
+            val absDays = kotlin.math.abs(daysLeft)
+            val wordForm = ruDaysWord(absDays)
 
-            // Format target date: "25 мая 2026"
-            val targetDateStr = if (targetDay > 0) {
-                val monthNames = listOf("января", "февраля", "марта", "апреля", "мая", "июня",
-                    "июля", "августа", "сентября", "октября", "ноября", "декабря")
-                "$targetDay ${monthNames[targetMonth]} $targetYear"
-            } else ""
+            // Label above number: event name or date
+            val monthNames = listOf("января", "февраля", "марта", "апреля", "мая", "июня",
+                "июля", "августа", "сентября", "октября", "ноября", "декабря")
+            val label = when {
+                eventName.isNotEmpty() -> eventName
+                targetDay > 0 -> "$targetDay ${monthNames[targetMonth]}"
+                else -> ""
+            }
+
+            // Bottom line: word form or "Сегодня"
+            val bottomText = when {
+                daysLeft == 0 && targetDay > 0 -> "Сегодня"
+                isPast -> "$wordForm назад"
+                daysLeft > 0 -> wordForm
+                else -> "настроить"
+            }
 
             Box(
                 modifier = GlanceModifier
@@ -77,51 +89,40 @@ class DaysWidget : GlanceAppWidget() {
                 Column(
                     modifier = GlanceModifier
                         .fillMaxSize()
-                        .padding(horizontal = 16.dp, vertical = 10.dp),
-                    verticalAlignment = Alignment.Vertical.Bottom
+                        .padding(start = 14.dp, end = 14.dp, top = 10.dp, bottom = 10.dp),
+                    verticalAlignment = Alignment.Vertical.CenterVertically
                 ) {
-                    // Event name — subtle top label
-                    if (eventName.isNotEmpty()) {
+                    // Top label
+                    if (label.isNotEmpty()) {
                         Text(
-                            text = eventName,
+                            text = label,
                             style = TextStyle(
                                 color = ColorProvider(R.color.widget_subtitle),
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Medium
                             )
                         )
-                        Spacer(modifier = GlanceModifier.height(1.dp))
-                    } else if (targetDateStr.isNotEmpty()) {
-                        Text(
-                            text = targetDateStr,
-                            style = TextStyle(
-                                color = ColorProvider(R.color.widget_subtitle),
-                                fontSize = 12.sp
-                            )
-                        )
-                        Spacer(modifier = GlanceModifier.height(1.dp))
                     }
 
-                    // Main number + word
-                    Column(
-                        horizontalAlignment = Alignment.Horizontal.Start
+                    // Number + word on same line — compact, no overlap
+                    Row(
+                        verticalAlignment = Alignment.Vertical.Bottom
                     ) {
                         Text(
-                            text = if (isPast && daysLeft != 0) "+" else "" + "${kotlin.math.abs(daysLeft)}",
+                            text = if (isPast) "+$absDays" else "$absDays",
                             style = TextStyle(
                                 color = if (isPast) ColorProvider(R.color.widget_subtitle)
                                     else ColorProvider(R.color.widget_accent),
-                                fontSize = 36.sp,
+                                fontSize = 28.sp,
                                 fontWeight = FontWeight.Bold
                             )
                         )
+                        Spacer(modifier = GlanceModifier.width(4.dp))
                         Text(
-                            text = if (daysLeft == 0 && targetDay > 0) "Сегодня"
-                                else if (isPast) "$wordForm назад"
-                                else wordForm,
+                            text = bottomText,
                             style = TextStyle(
                                 color = ColorProvider(R.color.widget_subtitle),
-                                fontSize = 12.sp
+                                fontSize = 13.sp
                             )
                         )
                     }
