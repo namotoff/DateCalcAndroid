@@ -20,8 +20,8 @@ android {
         applicationId = "com.datecalc"
         minSdk = 21
         targetSdk = 34
-        versionCode = 5
-        versionName = "1.1"
+        versionCode = 6
+        versionName = "2.0"
 
         vectorDrawables {
             useSupportLibrary = true
@@ -96,6 +96,14 @@ dependencies {
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.material:material-icons-extended")
+
+    // Jetpack Glance Widget
+    implementation("androidx.glance:glance-appwidget:1.1.1")
+    implementation("androidx.glance:glance-material3:1.1.1")
+
+    // VK Ads (myTarget)
+    implementation("com.my.target:mytarget-sdk:5.47.1")
+    implementation(kotlin("script-runtime"))
 
     debugImplementation("androidx.compose.ui:ui-tooling")
 }
