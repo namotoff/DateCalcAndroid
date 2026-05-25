@@ -196,7 +196,7 @@ fun AppScreen() {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text("Версия $APP_VERSION", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
                         Text("Калькулятор дней между датами с виджетом на рабочий стол.", fontSize = 14.sp)
-                        Text("Разработчик: namotoff", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text("Разработчик: Bios Tlt", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 },
                 confirmButton = {
@@ -455,52 +455,19 @@ private fun WidgetSetupScreen(paddingValues: PaddingValues, onDone: () -> Unit) 
             }
         }
 
-        // Event name — native EditText: no suggestions, no autofill, no assistant
-        val textColor = if (isSystemInDarkTheme()) android.graphics.Color.WHITE else android.graphics.Color.BLACK
-        val hintColor = android.graphics.Color.parseColor("#8E8E93")
-        val bgColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
-        AndroidView(
-            factory = { ctx ->
-                android.widget.EditText(ctx).apply {
-                    hint = "Название события"
-                    inputType = android.text.InputType.TYPE_CLASS_TEXT or
-                            android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES or
-                            android.text.InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS
-                    setSingleLine(true)
-                    textSize = 16f
-                    setPadding(48, 32, 48, 32)
-                    background = null
-                    setHintTextColor(hintColor)
-                    setTextColor(textColor)
-                    importantForAutofill = View.IMPORTANT_FOR_AUTOFILL_NO
-                    // Disable text editing menu (copy/paste/select)
-                    setTextIsSelectable(false)
-                    setCustomSelectionActionModeCallback(object : android.view.ActionMode.Callback {
-                        override fun onCreateActionMode(mode: android.view.ActionMode?, menu: android.view.Menu?) = false
-                        override fun onPrepareActionMode(mode: android.view.ActionMode?, menu: android.view.Menu?) = false
-                        override fun onActionItemClicked(mode: android.view.ActionMode?, item: android.view.MenuItem?) = false
-                        override fun onDestroyActionMode(mode: android.view.ActionMode?) {}
-                    })
-                }
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    bgColor,
-                    RoundedCornerShape(12.dp)
-                ),
-            update = { editText ->
-                editText.addTextChangedListener(object : android.text.TextWatcher {
-                    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-                    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-                    override fun afterTextChanged(s: android.text.Editable?) {
-                        val newText = s?.toString() ?: ""
-                        if (newText != eventName) {
-                            eventName = newText
-                        }
-                    }
-                })
-            }
+        // Event name — Compose TextField with proper keyboard type
+        OutlinedTextField(
+            value = eventName,
+            onValueChange = { eventName = it },
+            label = { Text("Название события") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                keyboardType = androidx.compose.ui.text.input.KeyboardType.Text,
+                imeAction = androidx.compose.ui.text.input.ImeAction.Done,
+                capitalization = androidx.compose.ui.text.input.KeyboardCapitalization.Sentences,
+                autoCorrect = false
+            )
         )
 
         // Date pickers
