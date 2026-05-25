@@ -1,9 +1,6 @@
 package com.datecalc.widget
 
 import android.content.Context
-import androidx.compose.ui.unit.DpSize
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
 import androidx.glance.ImageProvider
@@ -26,7 +23,10 @@ import androidx.glance.layout.width
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.datecalc.MainActivity
+import com.datecalc.R
 import com.datecalc.logic.DateCalculator
 import java.util.Calendar
 
@@ -36,6 +36,7 @@ class DaysWidgetReceiver : GlanceAppWidgetReceiver() {
 
 class DaysWidget : GlanceAppWidget() {
 
+    @Suppress("RestrictedApi", "ResourceType")
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         provideContent {
             val prefs = context.getSharedPreferences("datecalc_widget", Context.MODE_PRIVATE)
@@ -59,7 +60,7 @@ class DaysWidget : GlanceAppWidget() {
             Box(
                 modifier = GlanceModifier
                     .fillMaxSize()
-                    .background(ImageProvider(com.datecalc.R.drawable.widget_background))
+                    .background(ImageProvider(R.drawable.widget_background))
                     .clickable(actionStartActivity<MainActivity>())
             ) {
                 Column(
@@ -70,7 +71,7 @@ class DaysWidget : GlanceAppWidget() {
                         Text(
                             text = eventName.uppercase(),
                             style = TextStyle(
-                                color = ColorProvider(android.graphics.Color.parseColor("#8E8E93")),
+                                color = ColorProvider(R.color.widget_subtitle),
                                 fontSize = 11.sp
                             )
                         )
@@ -84,7 +85,7 @@ class DaysWidget : GlanceAppWidget() {
                         Text(
                             text = "$daysLeft",
                             style = TextStyle(
-                                color = ColorProvider(android.graphics.Color.parseColor("#0A84FF")),
+                                color = ColorProvider(R.color.widget_accent),
                                 fontSize = 40.sp
                             )
                         )
@@ -92,7 +93,7 @@ class DaysWidget : GlanceAppWidget() {
                         Text(
                             text = wordForm,
                             style = TextStyle(
-                                color = ColorProvider(android.graphics.Color.parseColor("#8E8E93")),
+                                color = ColorProvider(R.color.widget_subtitle),
                                 fontSize = 13.sp
                             )
                         )

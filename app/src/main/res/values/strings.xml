@@ -2,4 +2,8 @@
 <resources>
     <string name="app_name">Дата-калькулятор</string>
     <string name="widget_description">Показывает количество дней до выбранной даты</string>
+    <string name="widget_configure">НАСТРОИТЬ</string>
+    <color name="widget_subtitle">#8E8E93</color>
+    <color name="widget_accent">#0A84FF</color>
+    <color name="widget_bg">#1C1C1E</color>
 </resources>
