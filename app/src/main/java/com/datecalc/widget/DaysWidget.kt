@@ -102,35 +102,31 @@ class DaysWidget : GlanceAppWidget() {
                         .padding(start = 14.dp, end = 14.dp, top = 10.dp, bottom = 10.dp),
                     verticalAlignment = Alignment.Vertical.CenterVertically
                 ) {
-                    if (label.isNotEmpty()) {
-                        Text(
-                            text = label,
-                            style = TextStyle(
-                                color = ColorProvider(R.color.widget_subtitle),
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Medium
+                    Column {
+                        if (label.isNotEmpty()) {
+                            Text(
+                                text = label,
+                                style = TextStyle(
+                                    color = ColorProvider(R.color.widget_subtitle),
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Medium
+                                )
                             )
-                        )
-                    }
-
-                    Row(
-                        verticalAlignment = Alignment.Vertical.Bottom
-                    ) {
+                        }
                         Text(
                             text = if (isPast) "+$absDays" else "$absDays",
                             style = TextStyle(
                                 color = if (isPast) ColorProvider(R.color.widget_subtitle)
                                     else ColorProvider(R.color.widget_accent),
-                                fontSize = 28.sp,
+                                fontSize = 32.sp,
                                 fontWeight = FontWeight.Bold
                             )
                         )
-                        Spacer(modifier = GlanceModifier.width(4.dp))
                         Text(
                             text = bottomText,
                             style = TextStyle(
                                 color = ColorProvider(R.color.widget_subtitle),
-                                fontSize = 13.sp
+                                fontSize = 11.sp
                             )
                         )
                     }
