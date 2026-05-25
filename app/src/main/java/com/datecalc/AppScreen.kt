@@ -461,6 +461,14 @@ private fun WidgetSetupScreen(paddingValues: PaddingValues, onDone: () -> Unit) 
                     setHintTextColor(hintColor)
                     setTextColor(textColor)
                     importantForAutofill = View.IMPORTANT_FOR_AUTOFILL_NO
+                    // Disable text editing menu (copy/paste/select)
+                    setTextIsSelectable(false)
+                    setCustomSelectionActionModeCallback(object : android.view.ActionMode.Callback {
+                        override fun onCreateActionMode(mode: android.view.ActionMode?, menu: android.view.Menu?) = false
+                        override fun onPrepareActionMode(mode: android.view.ActionMode?, menu: android.view.Menu?) = false
+                        override fun onActionItemClicked(mode: android.view.ActionMode?, item: android.view.MenuItem?) = false
+                        override fun onDestroyActionMode(mode: android.view.ActionMode?) {}
+                    })
                 }
             },
             modifier = Modifier
