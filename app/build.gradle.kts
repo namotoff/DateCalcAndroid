@@ -19,9 +19,9 @@ android {
     defaultConfig {
         applicationId = "com.datecalc"
         minSdk = 21
-        targetSdk = 33
-        versionCode = 1
-        versionName = "1.0.0"
+        targetSdk = 34
+        versionCode = 5
+        versionName = "1.1"
 
         vectorDrawables {
             useSupportLibrary = true
@@ -79,22 +79,11 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
-
-    bundle {
-        language {
-            enableSplit = true
-        }
-        density {
-            enableSplit = true
-        }
-        abi {
-            enableSplit = true
-        }
-    }
 }
 
 dependencies {
     val composeBom = platform("androidx.compose:compose-bom:2024.01.00")
+
     implementation(composeBom)
 
     implementation("androidx.core:core-ktx:1.12.0")
@@ -107,8 +96,6 @@ dependencies {
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.material:material-icons-extended")
-
-    implementation("androidx.datastore:datastore-preferences:1.1.1")
 
     debugImplementation("androidx.compose.ui:ui-tooling")
 }
