@@ -253,6 +253,18 @@ private fun applyPresetToWidget(context: android.content.Context, preset: Widget
         .putInt("target_month", preset.month)
         .putInt("target_year", preset.year)
         .apply()
+
+    // Trigger widget update so it reads new prefs immediately
+    val widgetManager = android.appwidget.AppWidgetManager.getInstance(context)
+    val ids = widgetManager.getAppWidgetIds(
+        android.content.ComponentName(context, com.datecalc.widget.DaysWidgetReceiver::class.java)
+    )
+    if (ids.isNotEmpty()) {
+        val updateIntent = android.content.Intent(context, com.datecalc.widget.DaysWidgetReceiver::class.java)
+        updateIntent.action = android.appwidget.AppWidgetManager.ACTION_APPWIDGET_UPDATE
+        updateIntent.putExtra(android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
+        context.sendBroadcast(updateIntent)
+    }
 }
 
 // --- Saved Widgets Screen ---
