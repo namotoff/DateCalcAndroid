@@ -196,7 +196,7 @@ fun AppScreen() {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text("Версия $APP_VERSION", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
                         Text("Калькулятор дней между датами с виджетом на рабочий стол.", fontSize = 14.sp)
-                        Text("Разработчик: edazin@bk.ru", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text("Разработчик: namotoff", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 },
                 confirmButton = {
