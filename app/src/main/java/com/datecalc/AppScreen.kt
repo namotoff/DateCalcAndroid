@@ -156,28 +156,28 @@ fun AppScreen() {
             ) {
                 Column(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalArrangement = Arrangement.spacedBy(2.dp)
                 ) {
                     Text("Меню", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(6.dp))
 
-                    MenuChip("ℹ️", "О приложении", Color(0xFF007AFF)) {
+                    MenuChip("ℹ️", "О приложении") {
                         showMenu = false
                         showAbout = true
                     }
-                    MenuChip("📅", "Настроить виджет", Color(0xFF5856D6)) {
+                    MenuChip("📅", "Настроить виджет") {
                         showMenu = false
                         showWidgetSetup = true
                     }
-                    MenuChip("📋", "Сохранённые виджеты", Color(0xFFAF52DE)) {
+                    MenuChip("📋", "Сохранённые виджеты") {
                         showMenu = false
                         showSavedWidgets = true
                     }
-                    MenuChip("🔒", "Политика конфиденциальности", Color(0xFF34C759)) {
+                    MenuChip("🔒", "Политика конфиденциальности") {
                         showMenu = false
                         context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://namotoff.github.io/datecalc-privacy/")))
                     }
-                    MenuChip("✉️", "Написать разработчику", Color(0xFFFF9500)) {
+                    MenuChip("✉️", "Написать разработчику") {
                         showMenu = false
                         context.startActivity(Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:edazin@bk.ru")).apply { putExtra(Intent.EXTRA_SUBJECT, "Дата-калькулятор") })
                     }
@@ -355,21 +355,35 @@ private fun SavedWidgetsScreen(paddingValues: PaddingValues, onEdit: () -> Unit)
 // --- Menu Chip ---
 
 @Composable
-private fun MenuChip(emoji: String, label: String, color: Color, onClick: () -> Unit) {
+private fun MenuChip(emoji: String, label: String, onClick: () -> Unit) {
     Surface(
         onClick = onClick,
-        shape = RoundedCornerShape(12.dp),
-        color = color.copy(alpha = 0.12f),
+        shape = RoundedCornerShape(10.dp),
+        color = Color.Transparent,
         modifier = Modifier.fillMaxWidth()
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 4.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(emoji, fontSize = 22.sp)
+            Text(emoji, fontSize = 18.sp)
             Spacer(modifier = Modifier.width(12.dp))
-            Text(label, fontSize = 15.sp, fontWeight = FontWeight.Medium, color = color)
+            Text(
+                label,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Normal,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Spacer(modifier = Modifier.weight(1f))
+            Text("›", fontSize = 18.sp, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f))
         }
+        Divider(
+            modifier = Modifier.padding(start = 36.dp),
+            thickness = 0.5.dp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.12f)
+        )
     }
 }
 
