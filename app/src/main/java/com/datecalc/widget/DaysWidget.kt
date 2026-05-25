@@ -1,5 +1,6 @@
 package com.datecalc.widget
 
+import android.appwidget.AppWidgetManager
 import android.content.Context
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -18,7 +19,6 @@ import androidx.glance.layout.Column
 import androidx.glance.layout.Row
 import androidx.glance.layout.Spacer
 import androidx.glance.layout.fillMaxSize
-import androidx.glance.layout.height
 import androidx.glance.layout.padding
 import androidx.glance.layout.width
 import androidx.glance.text.FontWeight
@@ -28,10 +28,22 @@ import androidx.glance.unit.ColorProvider
 import com.datecalc.MainActivity
 import com.datecalc.R
 import com.datecalc.logic.DateCalculator
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.util.Calendar
 
 class DaysWidgetReceiver : GlanceAppWidgetReceiver() {
     override val glanceAppWidget: GlanceAppWidget = DaysWidget()
+
+    // Force all widget instances to re-read prefs on every update broadcast
+    override fun onUpdate(
+        context: Context,
+        appWidgetManager: AppWidgetManager,
+        appWidgetIds: IntArray
+    ) {
+        super.onUpdate(context, appWidgetManager, appWidgetIds)
+    }
 }
 
 class DaysWidget : GlanceAppWidget() {
@@ -63,7 +75,6 @@ class DaysWidget : GlanceAppWidget() {
             val absDays = kotlin.math.abs(daysLeft)
             val wordForm = ruDaysWord(absDays)
 
-            // Label above number: event name or date
             val monthNames = listOf("января", "февраля", "марта", "апреля", "мая", "июня",
                 "июля", "августа", "сентября", "октября", "ноября", "декабря")
             val label = when {
@@ -72,7 +83,6 @@ class DaysWidget : GlanceAppWidget() {
                 else -> ""
             }
 
-            // Bottom line: word form or "Сегодня"
             val bottomText = when {
                 daysLeft == 0 && targetDay > 0 -> "Сегодня"
                 isPast -> "$wordForm назад"
@@ -92,7 +102,6 @@ class DaysWidget : GlanceAppWidget() {
                         .padding(start = 14.dp, end = 14.dp, top = 10.dp, bottom = 10.dp),
                     verticalAlignment = Alignment.Vertical.CenterVertically
                 ) {
-                    // Top label
                     if (label.isNotEmpty()) {
                         Text(
                             text = label,
@@ -104,7 +113,6 @@ class DaysWidget : GlanceAppWidget() {
                         )
                     }
 
-                    // Number + word on same line — compact, no overlap
                     Row(
                         verticalAlignment = Alignment.Vertical.Bottom
                     ) {
