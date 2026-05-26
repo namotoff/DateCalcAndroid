@@ -63,12 +63,11 @@ class DaysWidget : GlanceAppWidget() {
             val todayYear = cal.get(Calendar.YEAR)
 
             val daysLeft = if (targetDay > 0 && targetMonth >= 0 && targetYear > 0) {
-                val result = DateCalculator.calculate(
+                DateCalculator.calculate(
                     todayDay, todayMonth, todayYear,
                     targetDay, targetMonth, targetYear,
                     includeStart = false, includeEnd = true
-                )
-                if (result.error.isEmpty()) result.days else 0
+                ).days
             } else 0
 
             val isPast = daysLeft < 0

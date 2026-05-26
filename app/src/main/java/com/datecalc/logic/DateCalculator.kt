@@ -65,12 +65,13 @@ object DateCalculator {
         val startCal = safeCalendar(sDay, startMonth, startYear)
         val endCal = safeCalendar(eDay, endMonth, endYear)
 
-        if (startCal.after(endCal)) {
-            return DateCalcResult(error = "Дата начала не может быть позже даты окончания.")
-        }
+        // Support both forward (start ≤ end) and backward (start > end) calculations
+        val swapNeeded = startCal.after(endCal)
+        val effectiveStart = if (swapNeeded) endCal else startCal
+        val effectiveEnd = if (swapNeeded) startCal else endCal
 
-        var adjustedStart = startCal.clone() as Calendar
-        var adjustedEnd = endCal.clone() as Calendar
+        var adjustedStart = effectiveStart.clone() as Calendar
+        var adjustedEnd = effectiveEnd.clone() as Calendar
 
         if (!includeStart) {
             adjustedStart.add(Calendar.DAY_OF_MONTH, 1)
@@ -81,13 +82,16 @@ object DateCalculator {
         }
 
         val diffMs = adjustedEnd.timeInMillis - adjustedStart.timeInMillis
-        val totalDays = maxOf(0, (diffMs / (1000 * 60 * 60 * 24)).toInt())
+        val totalDays = (diffMs / (1000 * 60 * 60 * 24)).toInt()
+        // If dates were swapped (past event), negate the result
+        val signedDays = if (swapNeeded) -totalDays else totalDays
 
         var yearDiff = adjustedEnd.get(Calendar.YEAR) - adjustedStart.get(Calendar.YEAR)
         val checkYear = adjustedStart.clone() as Calendar
         checkYear.add(Calendar.YEAR, yearDiff)
         if (checkYear.after(adjustedEnd)) yearDiff--
         yearDiff = maxOf(0, yearDiff)
+        if (swapNeeded) yearDiff = -yearDiff
 
         var monthDiff = 0
         var tempCal = adjustedStart.clone() as Calendar
@@ -99,19 +103,21 @@ object DateCalculator {
                 break
             }
         }
+        if (swapNeeded) monthDiff = -monthDiff
 
         val afterMonths = adjustedStart.clone() as Calendar
         afterMonths.add(Calendar.MONTH, monthDiff)
 
         val remainMs = adjustedEnd.timeInMillis - afterMonths.timeInMillis
-        val remainDays = maxOf(0, (remainMs / (1000 * 60 * 60 * 24)).toInt())
+        val remainDays = (remainMs / (1000 * 60 * 60 * 24)).toInt()
+        val signedRemainDays = if (swapNeeded) -remainDays else remainDays
 
         return DateCalcResult(
-            days = totalDays,
-            weeks = totalDays / 7,
+            days = signedDays,
+            weeks = if (signedDays >= 0) signedDays / 7 else -((-signedDays) / 7),
             months = monthDiff,
             years = yearDiff,
-            remainingDays = remainDays
+            remainingDays = signedRemainDays
         )
     }
 

@@ -289,16 +289,13 @@ private fun SavedWidgetsScreen(paddingValues: PaddingValues, onEdit: () -> Unit)
                 val monthNames = listOf("января", "февраля", "марта", "апреля", "мая", "июня",
                     "июля", "августа", "сентября", "октября", "ноября", "декабря")
 
-                // Calculate days left
+                // Calculate days left (negative = past)
                 val cal = Calendar.getInstance()
-                val daysLeft = run {
-                    val r = DateCalculator.calculate(
-                        cal.get(Calendar.DAY_OF_MONTH), cal.get(Calendar.MONTH), cal.get(Calendar.YEAR),
-                        preset.day, preset.month, preset.year,
-                        includeStart = false, includeEnd = true
-                    )
-                    if (r.error.isEmpty()) r.days else 0
-                }
+                val daysLeft = DateCalculator.calculate(
+                    cal.get(Calendar.DAY_OF_MONTH), cal.get(Calendar.MONTH), cal.get(Calendar.YEAR),
+                    preset.day, preset.month, preset.year,
+                    includeStart = false, includeEnd = true
+                ).days
 
                 Surface(
                     shape = RoundedCornerShape(14.dp),
@@ -356,28 +353,30 @@ private fun SavedWidgetsScreen(paddingValues: PaddingValues, onEdit: () -> Unit)
 
 @Composable
 private fun MenuChip(emoji: String, label: String, onClick: () -> Unit) {
-    Surface(
-        onClick = onClick,
-        shape = RoundedCornerShape(10.dp),
-        color = Color.Transparent,
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 4.dp, vertical = 10.dp),
-            verticalAlignment = Alignment.CenterVertically
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Surface(
+            onClick = onClick,
+            shape = RoundedCornerShape(10.dp),
+            color = Color.Transparent,
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Text(emoji, fontSize = 18.sp)
-            Spacer(modifier = Modifier.width(12.dp))
-            Text(
-                label,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Normal,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Spacer(modifier = Modifier.weight(1f))
-            Text("›", fontSize = 18.sp, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 4.dp, vertical = 10.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(emoji, fontSize = 18.sp)
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(
+                    label,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Normal,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                Text("›", fontSize = 18.sp, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f))
+            }
         }
         Divider(
             modifier = Modifier.padding(start = 36.dp),
@@ -405,12 +404,11 @@ private fun WidgetSetupScreen(paddingValues: PaddingValues, onDone: () -> Unit) 
 
     val previewDays = remember(safeDay, eventMonth, eventYear) {
         val today = Calendar.getInstance()
-        val result = DateCalculator.calculate(
+        DateCalculator.calculate(
             today.get(Calendar.DAY_OF_MONTH), today.get(Calendar.MONTH), today.get(Calendar.YEAR),
             safeDay, eventMonth, eventYear,
             includeStart = false, includeEnd = true
-        )
-        if (result.error.isEmpty()) result.days else 0
+        ).days
     }
 
     LaunchedEffect(safeDay) {
