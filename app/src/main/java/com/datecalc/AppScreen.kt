@@ -124,7 +124,7 @@ fun AppScreen(activity: Activity) {
                     Spacer(modifier = Modifier.height(6.dp))
 
                     if (!isSubscribed) {
-                        MenuItemRow("💎", "Полная версия") {
+                        MenuItemRow("💎", "Unlimited") {
                             showMenu = false
                             showPaywall = true
                         }
@@ -262,7 +262,7 @@ private fun MainContent(
                             fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(end = 8.dp, top = 18.dp))
                     }
                     if (!isSubscribed) {
-                        TextButton(onClick = onShowPaywall) { Text("Full", fontSize = 13.sp, color = Color(0xFF007AFF)) }
+                        TextButton(onClick = onShowPaywall) { Text("Unlimited", fontSize = 13.sp, color = Color(0xFF007AFF)) }
                     }
                     IconButton(onClick = onToggleTheme) {
                         Icon(
