@@ -37,7 +37,7 @@ fun PaywallScreen(
                 modifier = Modifier.padding(28.dp).verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("Дата-калькулятор Премиум", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = textColor)
+                Text("Дата-калькулятор Full", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = textColor)
                 Spacer(modifier = Modifier.height(12.dp))
 
                 if (trialDaysRemaining > 0) {
