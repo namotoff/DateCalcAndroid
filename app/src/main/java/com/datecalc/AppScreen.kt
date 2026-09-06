@@ -1,16 +1,21 @@
 package com.datecalc
 
 import android.app.Activity
-import androidx.compose.foundation.shape.RoundedCornerShape
+import android.content.Intent
+import android.net.Uri
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -41,6 +46,8 @@ fun AppScreen(activity: Activity) {
     var isSubscribed by remember { mutableStateOf(false) }
     var trialDaysLeft by remember { mutableIntStateOf(7) }
     var showPaywall by remember { mutableStateOf(false) }
+    var showMenu by remember { mutableStateOf(false) }
+    var showAbout by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         billingClient.initialize()
@@ -56,7 +63,6 @@ fun AppScreen(activity: Activity) {
             } else {
                 hasAccess = SubscriptionManager.hasAccess(context).first()
                 trialDaysLeft = SubscriptionManager.trialDaysRemaining(context).first()
-                if (!hasAccess) showPaywall = true
             }
         } else {
             hasAccess = true
@@ -96,10 +102,96 @@ fun AppScreen(activity: Activity) {
                 onToggleTheme = { darkTheme = !darkTheme },
                 isSubscribed = isSubscribed,
                 trialDaysLeft = trialDaysLeft,
-                onShowPaywall = { showPaywall = true }
+                onShowPaywall = { showPaywall = true },
+                onShowMenu = { showMenu = true }
+            )
+        }
+
+        if (showMenu) {
+            ModalBottomSheet(
+                onDismissRequest = { showMenu = false },
+                containerColor = MaterialTheme.colorScheme.surface,
+                shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    verticalArrangement = Arrangement.spacedBy(2.dp)
+                ) {
+                    Text("Меню", fontSize = 20.sp, fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface)
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    if (!isSubscribed) {
+                        MenuItemRow("💎", "Премиум") {
+                            showMenu = false
+                            showPaywall = true
+                        }
+                    }
+                    MenuItemRow("📅", "Настроить виджет") {
+                        showMenu = false
+                        if (hasAccess) {
+                            // TODO: открыть экран настройки виджета
+                        } else {
+                            showPaywall = true
+                        }
+                    }
+                    MenuItemRow("ℹ️", "О приложении") {
+                        showMenu = false
+                        showAbout = true
+                    }
+                    MenuItemRow("🔒", "Политика конфиденциальности") {
+                        showMenu = false
+                        context.startActivity(Intent(Intent.ACTION_VIEW,
+                            Uri.parse("https://namotoff.github.io/datecalc-privacy/")))
+                    }
+                    MenuItemRow("✉️", "Написать разработчику") {
+                        showMenu = false
+                        context.startActivity(Intent(Intent.ACTION_SENDTO,
+                            Uri.parse("mailto:edazin@bk.ru")).apply {
+                            putExtra(Intent.EXTRA_SUBJECT, "Дата-калькулятор")
+                        })
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+            }
+        }
+
+        if (showAbout) {
+            AlertDialog(
+                onDismissRequest = { showAbout = false },
+                title = { Text("Дата-калькулятор", fontWeight = FontWeight.Bold) },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text("Версия 1.2", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
+                        Text("Калькулятор дней между датами с виджетом на рабочий стол.", fontSize = 14.sp)
+                        Text("Разработчик: Tlt Bios", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                },
+                confirmButton = {
+                    TextButton(onClick = { showAbout = false }) { Text("OK") }
+                }
             )
         }
     }
+}
+
+@Composable
+private fun MenuItemRow(emoji: String, title: String, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(emoji, fontSize = 18.sp, modifier = Modifier.width(28.dp))
+        Text(title, fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.weight(1f))
+        Text("›", fontSize = 18.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+    Divider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -109,7 +201,8 @@ private fun MainContent(
     onToggleTheme: () -> Unit,
     isSubscribed: Boolean,
     trialDaysLeft: Int,
-    onShowPaywall: () -> Unit
+    onShowPaywall: () -> Unit,
+    onShowMenu: () -> Unit
 ) {
     val cal = Calendar.getInstance()
     val todayDay = cal.get(Calendar.DAY_OF_MONTH)
@@ -180,6 +273,9 @@ private fun MainContent(
                     }
                     IconButton(onClick = { resetFields() }) {
                         Icon(Icons.Filled.Refresh, "Сбросить", tint = Color(0xFF007AFF), modifier = Modifier.size(20.dp))
+                    }
+                    IconButton(onClick = onShowMenu) {
+                        Text("☰", fontSize = 20.sp, color = Color(0xFF007AFF))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
