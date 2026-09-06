@@ -21,7 +21,7 @@ object SubscriptionManager {
     private val KEY_IS_SUBSCRIBED = booleanPreferencesKey("is_subscribed")
 
     const val TRIAL_DAYS = 7L
-    const val SUBSCRIPTION_PRODUCT_ID = "datecalc_premium"
+    const val SUBSCRIPTION_PRODUCT_ID = "unlimited"
 
     fun trialStarted(context: Context): Flow<Boolean> =
         context.dataStore.data.map { it[KEY_TRIAL_STARTED] ?: false }

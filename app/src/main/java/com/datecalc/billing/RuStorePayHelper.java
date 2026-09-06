@@ -27,7 +27,7 @@ public final class RuStorePayHelper {
         try {
             return new RuStorePayClientProvider().provide(
                     context,
-                    new ConsoleApplicationId("com.datecalc"),
+                    new ConsoleApplicationId("com.namotoff.datecalc"),
                     java.util.Collections.emptyMap()
             );
         } catch (Exception e) {

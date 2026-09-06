@@ -17,11 +17,11 @@ android {
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.datecalc"
+        applicationId = "com.namotoff.datecalc"
         minSdk = 23
         targetSdk = 33
-        versionCode = 6
-        versionName = "1.2"
+        versionCode = 1
+        versionName = "1.0"
 
         vectorDrawables {
             useSupportLibrary = true
