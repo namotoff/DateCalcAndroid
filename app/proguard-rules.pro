@@ -12,5 +12,9 @@
     *** dataStore(...);
 }
 
+-keep class ru.rustore.sdk.** { *; }
+-keep class ru.ok.tracer.** { *; }
+-dontwarn ru.rustore.sdk.**
+-dontwarn ru.ok.tracer.**
 -dontwarn kotlinx.coroutines.**
 -dontwarn androidx.datastore.**

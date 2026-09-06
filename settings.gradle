@@ -10,6 +10,7 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        maven { url 'https://nexus-external.vkteam.ru/repository/maven-rustore-exposed/' }
     }
 }
 

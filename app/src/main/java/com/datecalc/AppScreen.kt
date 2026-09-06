@@ -88,7 +88,7 @@ fun AppScreen(activity: Activity) {
                         } catch (_: Exception) {}
                     }
                 },
-                onNotNow = { showPaywall = false; hasAccess = true }
+                onNotNow = { showPaywall = false }
             )
         } else {
             MainContent(

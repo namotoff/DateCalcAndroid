@@ -2,54 +2,37 @@ package com.datecalc.billing
 
 import android.app.Activity
 import android.content.Context
+import android.util.Log
+import ru.rustore.sdk.pay.RuStorePayClient
 
 class RuStoreBillingClient(private val context: Context) : BillingClient {
 
-    private var rustoreClient: Any? = null
+    private var payClient: RuStorePayClient? = null
 
     override fun initialize() {
         try {
-            val builderClass = Class.forName("ru.rustore.sdk.billingclient.RuStoreBillingClient")
-            val builder = builderClass.getMethod("builder", Context::class.java)
-                .invoke(null, context) ?: return
-
-            val setAppId = builder.javaClass.getMethod("applicationId", String::class.java)
-            setAppId.invoke(builder, "com.datecalc")
-
-            val build = builder.javaClass.getMethod("build")
-            rustoreClient = build.invoke(builder)
-        } catch (_: Exception) {}
+            payClient = RuStorePayHelper.createClient(context)
+        } catch (e: Exception) {
+            Log.e("RuStoreBilling", "Init failed", e)
+        }
     }
 
     override suspend fun purchase(activity: Activity): Boolean {
+        val client = payClient ?: return false
         return try {
-            if (rustoreClient == null) return false
-            val purchases = rustoreClient!!.javaClass.getMethod("purchases").invoke(rustoreClient)
-            val purchaseMethod = purchases.javaClass.getMethod(
-                "purchase",
-                Activity::class.java,
-                String::class.java
-            )
-            purchaseMethod.invoke(purchases, activity, SubscriptionManager.SUBSCRIPTION_PRODUCT_ID)
-            true
-        } catch (_: Exception) {
+            RuStorePayHelper.purchase(client, SubscriptionManager.SUBSCRIPTION_PRODUCT_ID)
+        } catch (e: Exception) {
+            Log.e("RuStoreBilling", "Purchase failed", e)
             false
         }
     }
 
     override suspend fun checkPurchases(): Boolean {
+        val client = payClient ?: return false
         return try {
-            if (rustoreClient == null) return false
-            val purchases = rustoreClient!!.javaClass.getMethod("purchases").invoke(rustoreClient)
-            val getPurchases = purchases.javaClass.getMethod("getPurchases")
-            val response = getPurchases.invoke(purchases)
-            val purchaseList = response?.javaClass?.getMethod("getPurchases")
-                ?.invoke(response) as? List<*> ?: return false
-            purchaseList.any { purchase ->
-                val state = purchase?.javaClass?.getMethod("getPurchaseState")?.invoke(purchase)
-                state?.toString() == "PURCHASED"
-            }
-        } catch (_: Exception) {
+            RuStorePayHelper.hasActiveSubscription(client)
+        } catch (e: Exception) {
+            Log.e("RuStoreBilling", "Check purchases failed", e)
             false
         }
     }

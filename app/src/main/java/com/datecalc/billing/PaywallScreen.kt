@@ -54,8 +54,7 @@ fun PaywallScreen(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                listOf("Расчёт дней, недель и месяцев", "Учёт начальной и конечной даты",
-                    "Неограниченные вычисления", "Без рекламы").forEach { feature ->
+                listOf("Виджет для домашнего экрана").forEach { feature ->
                     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
                         Text("\u2713", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFF007AFF), modifier = Modifier.width(28.dp))
                         Text(feature, fontSize = 15.sp, color = featureColor)
@@ -69,7 +68,7 @@ fun PaywallScreen(
                     modifier = Modifier.fillMaxWidth().height(52.dp)) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text("Подписаться", fontSize = 17.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                        Text("149 \u20BD/мес \u00B7 7 дней бесплатно", fontSize = 12.sp, color = Color.White.copy(alpha = 0.85f))
+                        Text("99 \u20BD/мес \u00B7 7 дней бесплатно", fontSize = 12.sp, color = Color.White.copy(alpha = 0.85f))
                     }
                 }
 
@@ -86,7 +85,7 @@ fun PaywallScreen(
                     Text("Подписка продлевается автоматически. Отмена в любой момент в настройках подписки магазина.",
                         fontSize = 11.sp, color = mutedColor, textAlign = TextAlign.Center)
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text("Бесплатный пробный период: 7 дней. По окончании — 149 \u20BD/мес.",
+                    Text("Бесплатный пробный период: 7 дней. По окончании — 99 \u20BD/мес.",
                         fontSize = 11.sp, color = mutedColor, textAlign = TextAlign.Center)
                 }
             }
