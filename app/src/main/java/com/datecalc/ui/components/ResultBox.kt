@@ -96,7 +96,8 @@ private class ConcaveCutoutShape(
 fun ResultBox(
     result: DateCalcResult,
     description: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    scale: Float = 1f
 ) {
     val isLight = MaterialTheme.colorScheme.background.luminance() > 0.5f
 
@@ -109,8 +110,13 @@ fun ResultBox(
     val tileValueColor = if (isLight) Color(0xFF1C1C1E) else Color.White
     val tileStroke = if (isLight) Color.Black.copy(alpha = 0.06f) else Color.White.copy(alpha = 0.06f)
     val accentColor = Color(0xFF007AFF)
-    val cutoutR = 20.dp
-    val circleSize = 36.dp
+    val cutoutR = 20.dp * scale
+    val circleSize = 36.dp * scale
+    val outerPad = 12.dp * scale
+    val innerPad = 10.dp * scale
+    val titleFontSize = (15f * scale).sp
+    val valueFontSize = (20f * scale).sp
+    val tileTitleFontSize = (11f * scale).sp
 
     Card(
         shape = RoundedCornerShape(16.dp),
@@ -118,32 +124,32 @@ fun ResultBox(
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         modifier = modifier
     ) {
-        Column(modifier = Modifier.padding(12.dp)) {
-            Text("Результат", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = resultOnBg)
+        Column(modifier = Modifier.padding(outerPad)) {
+            Text("Результат", fontSize = titleFontSize, fontWeight = FontWeight.SemiBold, color = resultOnBg)
             Spacer(modifier = Modifier.height(2.dp))
             Text(description, fontSize = 11.sp, color = resultDescColor)
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(8.dp * scale))
 
             Box(modifier = Modifier.fillMaxWidth()) {
                 Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     Row(horizontalArrangement = Arrangement.spacedBy(2.dp), modifier = Modifier.fillMaxWidth()) {
                         CutoutTile(
                             "Дней", "${result.days}", topRowBg, tileTitleColor, tileValueColor, tileStroke,
-                            CutoutPos.BottomRight, cutoutR, Modifier.weight(1f)
+                            CutoutPos.BottomRight, cutoutR, innerPad, tileTitleFontSize, valueFontSize, Modifier.weight(1f)
                         )
                         CutoutTile(
                             "Недель", "${result.weeks}", topRowBg, tileTitleColor, tileValueColor, tileStroke,
-                            CutoutPos.BottomLeft, cutoutR, Modifier.weight(1f)
+                            CutoutPos.BottomLeft, cutoutR, innerPad, tileTitleFontSize, valueFontSize, Modifier.weight(1f)
                         )
                     }
                     Row(horizontalArrangement = Arrangement.spacedBy(2.dp), modifier = Modifier.fillMaxWidth()) {
                         CutoutTile(
                             "Месяцев", "${result.months}", bottomRowBg, tileTitleColor, tileValueColor, tileStroke,
-                            CutoutPos.TopRight, cutoutR, Modifier.weight(1f)
+                            CutoutPos.TopRight, cutoutR, innerPad, tileTitleFontSize, valueFontSize, Modifier.weight(1f)
                         )
                         CutoutTile(
                             "Остаток дней", "${result.remainingDays}", bottomRowBg, tileTitleColor, tileValueColor, tileStroke,
-                            CutoutPos.TopLeft, cutoutR, Modifier.weight(1f)
+                            CutoutPos.TopLeft, cutoutR, innerPad, tileTitleFontSize, valueFontSize, Modifier.weight(1f)
                         )
                     }
                 }
@@ -163,7 +169,7 @@ fun ResultBox(
                         Box(contentAlignment = Alignment.Center) {
                             Text(
                                 "${result.years}",
-                                fontSize = 16.sp,
+                                fontSize = (16f * scale).sp,
                                 fontWeight = FontWeight.Bold,
                                 color = accentColor
                             )
@@ -185,10 +191,12 @@ private fun CutoutTile(
     strokeColor: Color,
     cutoutPos: CutoutPos,
     cutoutRadius: Dp,
+    innerPad: Dp,
+    titleFontSize: androidx.compose.ui.unit.TextUnit,
+    valueFontSize: androidx.compose.ui.unit.TextUnit,
     modifier: Modifier = Modifier
 ) {
     val shape = ConcaveCutoutShape(cutoutPos, cutoutRadius)
-    val innerPad = 10.dp
     val density = LocalDensity.current
     val cutoutPad = with(density) { (cutoutRadius.toPx() * 0.35f).toDp() }
     val contentModifier = when (cutoutPos) {
@@ -205,9 +213,9 @@ private fun CutoutTile(
             .then(contentModifier)
     ) {
         Column {
-            Text(title, fontSize = 11.sp, color = titleColor)
+            Text(title, fontSize = titleFontSize, color = titleColor)
             Spacer(modifier = Modifier.height(3.dp))
-            Text(value, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = valueColor)
+            Text(value, fontSize = valueFontSize, fontWeight = FontWeight.Bold, color = valueColor)
         }
     }
 }

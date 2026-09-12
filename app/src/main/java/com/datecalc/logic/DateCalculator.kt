@@ -81,7 +81,7 @@ object DateCalculator {
         }
 
         val diffMs = adjustedEnd.timeInMillis - adjustedStart.timeInMillis
-        val totalDays = maxOf(0, (diffMs / (1000 * 60 * 60 * 24)).toInt())
+        val totalDays = maxOf(0, Math.round(diffMs.toDouble() / 86400000.0).toInt())
 
         var yearDiff = adjustedEnd.get(Calendar.YEAR) - adjustedStart.get(Calendar.YEAR)
         val checkYear = adjustedStart.clone() as Calendar
@@ -104,7 +104,7 @@ object DateCalculator {
         afterMonths.add(Calendar.MONTH, monthDiff)
 
         val remainMs = adjustedEnd.timeInMillis - afterMonths.timeInMillis
-        val remainDays = maxOf(0, (remainMs / (1000 * 60 * 60 * 24)).toInt())
+        val remainDays = maxOf(0, Math.round(remainMs.toDouble() / 86400000.0).toInt())
 
         return DateCalcResult(
             days = totalDays,

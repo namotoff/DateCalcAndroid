@@ -7,6 +7,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -30,7 +31,8 @@ fun DateCard(
     toggleChecked: Boolean,
     onDateChange: (day: Int, month: Int, year: Int) -> Unit,
     onToggleChange: (Boolean) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    scale: Float = 1f
 ) {
     val cardBg = MaterialTheme.colorScheme.surface
     val cardStroke = MaterialTheme.colorScheme.outline
@@ -41,6 +43,17 @@ fun DateCard(
     val dayIndex = (selectedDay - 1).coerceIn(0, availableDays.lastIndex.coerceAtLeast(0))
     val yearIndex = (selectedYear - DateCalculator.YEARS.first()).coerceIn(0, DateCalculator.YEARS.lastIndex)
 
+    val vPad = 10.dp * scale
+    val headerSpacer = 8.dp * scale
+    val labelSpacer = 4.dp * scale
+    val wheelItemHeight = 32.dp * scale
+    val dayFont = 20f * scale
+    val monthFont = 14f * scale
+    val yearFont = 19f * scale
+    val titleFontSize = (15f * scale).sp
+    val labelFontSize = (11f * scale).sp
+    val togglePad = 10.dp * scale
+
     Card(
         shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(containerColor = cardBg),
@@ -49,7 +62,7 @@ fun DateCard(
             .fillMaxWidth()
             .border(1.dp, cardStroke, RoundedCornerShape(18.dp))
     ) {
-        Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp)) {
+        Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = vPad)) {
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                 Surface(shape = RoundedCornerShape(8.dp), color = accentColor, modifier = Modifier.size(26.dp)) {
                     Box(contentAlignment = Alignment.Center) {
@@ -60,21 +73,21 @@ fun DateCard(
                     }
                 }
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(title, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = textColor)
+                Text(title, fontSize = titleFontSize, fontWeight = FontWeight.SemiBold, color = textColor)
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(headerSpacer))
 
             Row(modifier = Modifier.fillMaxWidth()) {
-                Text("День", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = labelColor,
+                Text("День", fontSize = labelFontSize, fontWeight = FontWeight.SemiBold, color = labelColor,
                     modifier = Modifier.weight(1f), textAlign = TextAlign.Center)
-                Text("Месяц", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = labelColor,
+                Text("Месяц", fontSize = labelFontSize, fontWeight = FontWeight.SemiBold, color = labelColor,
                     modifier = Modifier.weight(1.5f), textAlign = TextAlign.Center)
-                Text("Год", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = labelColor,
+                Text("Год", fontSize = labelFontSize, fontWeight = FontWeight.SemiBold, color = labelColor,
                     modifier = Modifier.weight(1.3f), textAlign = TextAlign.Center)
             }
 
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(labelSpacer))
 
             Row(
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -103,7 +116,7 @@ fun DateCard(
                             else -> onDateChange(newDay, selectedMonth, selectedYear)
                         }
                     },
-                    modifier = Modifier.weight(1f), itemHeight = 32.dp, fontSize = 20f, accentColor = accentColor,
+                    modifier = Modifier.weight(1f), itemHeight = wheelItemHeight, fontSize = dayFont, accentColor = accentColor,
                     isCircular = false
                 )
 
@@ -122,7 +135,7 @@ fun DateCard(
                         val newDay = selectedDay.coerceAtMost(maxDay)
                         onDateChange(newDay, newMonth, clampedYear)
                     },
-                    modifier = Modifier.weight(1.5f), itemHeight = 32.dp, fontSize = 14f, accentColor = accentColor,
+                    modifier = Modifier.weight(1.5f), itemHeight = wheelItemHeight, fontSize = monthFont, accentColor = accentColor,
                     isCircular = true
                 )
 
@@ -135,19 +148,21 @@ fun DateCard(
                         val newDay = selectedDay.coerceAtMost(maxDay)
                         onDateChange(newDay, selectedMonth, newYear)
                     },
-                    modifier = Modifier.weight(1.3f), itemHeight = 32.dp, fontSize = 19f, accentColor = accentColor,
+                    modifier = Modifier.weight(1.3f), itemHeight = wheelItemHeight, fontSize = yearFont, accentColor = accentColor,
                     isCircular = false
                 )
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(togglePad))
 
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                 Switch(checked = toggleChecked, onCheckedChange = onToggleChange,
                     colors = SwitchDefaults.colors(checkedTrackColor = accentColor, checkedThumbColor = Color.White),
-                    modifier = Modifier.height(20.dp))
+                    modifier = Modifier.height(20.dp).scale(scale))
                 Spacer(modifier = Modifier.width(6.dp))
-                Text(toggleTitle, fontSize = 12.sp, color = toggleColor, modifier = Modifier.weight(1f))
+                Text(toggleTitle, fontSize = (12f * scale).sp, color = toggleColor,
+                    maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f))
             }
         }
     }

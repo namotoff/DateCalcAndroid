@@ -19,7 +19,7 @@ android {
     defaultConfig {
         applicationId = "com.namotoff.datecalc"
         minSdk = 23
-        targetSdk = 33
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0"
 
@@ -115,4 +115,5 @@ dependencies {
     implementation("androidx.glance:glance-material3:1.1.1")
 
     debugImplementation("androidx.compose.ui:ui-tooling")
+    testImplementation("junit:junit:4.13.2")
 }

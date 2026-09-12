@@ -12,7 +12,6 @@ import ru.rustore.sdk.pay.model.ProductPurchaseParams;
 import ru.rustore.sdk.pay.model.ProductPurchaseResult;
 import ru.rustore.sdk.pay.model.ProductType;
 import ru.rustore.sdk.pay.model.Purchase;
-import ru.rustore.sdk.pay.model.PurchaseStatus;
 import ru.rustore.sdk.pay.model.SubscriptionPurchaseStatus;
 
 import java.util.List;
@@ -36,6 +35,10 @@ public final class RuStorePayHelper {
         }
     }
 
+    /**
+     * Initiates a purchase. Returns true only if the purchase completed successfully.
+     * The caller should verify the purchase status separately via hasActiveSubscription().
+     */
     public static boolean purchase(RuStorePayClient client, String productId) {
         try {
             ProductPurchaseParams params = new ProductPurchaseParams(
@@ -45,7 +48,13 @@ public final class RuStorePayHelper {
             Task<ProductPurchaseResult> task = client.getPurchaseInteractor()
                     .purchase(params, null, null, null);
             ProductPurchaseResult result = awaitTask(task, 60);
-            return result != null;
+            if (result == null) {
+                Log.w(TAG, "Purchase returned null result");
+                return false;
+            }
+            Log.d(TAG, "Purchase initiated: productId=" + result.getProductId()
+                    + ", purchaseType=" + result.getPurchaseType());
+            return true;
         } catch (Exception e) {
             Log.e(TAG, "Purchase failed", e);
             return false;
@@ -71,6 +80,10 @@ public final class RuStorePayHelper {
         }
     }
 
+    /**
+     * Blocks the current thread to await a Task result.
+     * Callers must ensure this is NOT run on the main thread.
+     */
     private static <T> T awaitTask(Task<T> task, int timeoutSeconds) {
         try {
             return task.await(timeoutSeconds, TimeUnit.SECONDS);

@@ -16,7 +16,6 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun PaywallScreen(
-    trialDaysRemaining: Int,
     onSubscribe: () -> Unit,
     onRestore: () -> Unit,
     onNotNow: () -> Unit
@@ -38,20 +37,6 @@ fun PaywallScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text("Дата-калькулятор Unlimited", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = textColor)
-                Spacer(modifier = Modifier.height(12.dp))
-
-                if (trialDaysRemaining > 0) {
-                    Surface(shape = RoundedCornerShape(12.dp), color = Color(0xFF007AFF).copy(alpha = 0.12f)) {
-                        Text("Пробный период: $trialDaysRemaining дн. осталось", fontSize = 15.sp, fontWeight = FontWeight.SemiBold,
-                            color = Color(0xFF007AFF), modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
-                    }
-                } else {
-                    Surface(shape = RoundedCornerShape(12.dp), color = MaterialTheme.colorScheme.error.copy(alpha = 0.10f)) {
-                        Text("Пробный период завершён", fontSize = 15.sp, fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
-                    }
-                }
-
                 Spacer(modifier = Modifier.height(20.dp))
 
                 listOf("Виджет для домашнего экрана").forEach { feature ->
@@ -66,10 +51,7 @@ fun PaywallScreen(
                 Button(onClick = onSubscribe, shape = RoundedCornerShape(14.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF007AFF)),
                     modifier = Modifier.fillMaxWidth().height(52.dp)) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("Подписаться", fontSize = 17.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                        Text("99 \u20BD/мес \u00B7 7 дней бесплатно", fontSize = 12.sp, color = Color.White.copy(alpha = 0.85f))
-                    }
+                    Text("Подписаться — 99 \u20BD/мес", fontSize = 17.sp, fontWeight = FontWeight.Bold, color = Color.White)
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -79,13 +61,10 @@ fun PaywallScreen(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-                    Text("Оплата списывается через магазин приложений (RuStore/Google Play).",
+                    Text("Оплата списывается через RuStore.",
                         fontSize = 11.sp, color = mutedColor, textAlign = TextAlign.Center)
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text("Подписка продлевается автоматически. Отмена в любой момент в настройках подписки магазина.",
-                        fontSize = 11.sp, color = mutedColor, textAlign = TextAlign.Center)
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text("Бесплатный пробный период: 7 дней. По окончании — 99 \u20BD/мес.",
+                    Text("Подписка продлевается автоматически. Отмена в любой момент.",
                         fontSize = 11.sp, color = mutedColor, textAlign = TextAlign.Center)
                 }
             }

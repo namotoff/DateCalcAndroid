@@ -11,9 +11,12 @@ interface BillingClient {
 object BillingFactory {
 
     fun create(context: android.content.Context): BillingClient {
-        return if (isRuStoreInstalled(context)) {
-            RuStoreBillingClient(context)
-        } else {
+        if (!isRuStoreInstalled(context)) return LocalBillingClient()
+        return try {
+            val clazz = Class.forName("com.datecalc.billing.RuStoreBillingClient")
+            val constructor = clazz.getConstructor(android.content.Context::class.java)
+            constructor.newInstance(context) as BillingClient
+        } catch (e: Throwable) {
             LocalBillingClient()
         }
     }

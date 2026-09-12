@@ -36,13 +36,16 @@ fun WheelColumnPicker(
     visibleCount: Int = 3,
     fontSize: Float = 20f,
     accentColor: Color,
+    selectedTextColor: Color = Color.Unspecified,
+    unselectedTextColor: Color = Color.Unspecified,
+    pickerBgColor: Color = Color.Unspecified,
     isCircular: Boolean = false
 ) {
     require(items.isNotEmpty()) { "Items must not be empty" }
 
-    val selectedColor = MaterialTheme.colorScheme.onSurface
-    val unselectedColor = MaterialTheme.colorScheme.onSurfaceVariant
-    val pickerBg = MaterialTheme.colorScheme.surfaceVariant
+    val selectedColor = if (selectedTextColor != Color.Unspecified) selectedTextColor else MaterialTheme.colorScheme.onSurface
+    val unselectedColor = if (unselectedTextColor != Color.Unspecified) unselectedTextColor else MaterialTheme.colorScheme.onSurfaceVariant
+    val pickerBg = if (pickerBgColor != Color.Unspecified) pickerBgColor else MaterialTheme.colorScheme.surfaceVariant
 
     if (isCircular) {
         InfiniteWheelPicker(
